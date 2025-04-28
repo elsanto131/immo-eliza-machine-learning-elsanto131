@@ -1,103 +1,124 @@
 # Regression
 
-- Repository: `immo-eliza-ml`
-- Type: `Consolidation`
-- Duration: `3-4 days`
-- Deadline: `xx/xx/20xx 5:00 PM`
-- Team: solo
+- Repository: `challenge-regression`
+- Type of Challenge: `Consolidation`
+- Duration: `5 days`
+- Deadline: `06/05/2025 17:00`
+- Solo Challenge
 
-## Learning Objectives
+## Learning objectives
 
 - Be able to preprocess data for machine learning.
-- Be able to apply a linear regression in a real-life context.
+- Be able to apply a regression in a real context.
+- Be able to understand some of  machine learning.
+
 
 ## The Mission
 
-The real estate company Immo Eliza asked you to create a machine learning model to predict prices of real estate properties in Belgium.
+The real estate company "ImmoEliza" asks you to create a machine learning model to predict prices on Belgium's real estate sales.
 
-After the **scraping**, **cleaning** and **analyzing**, you are ready to preprocess the data and finally build a performant machine learning model!
+You have **collected** your data, you have **cleaned** and **analyzed** it a first time!
+So it's time to do some machine learning with it!
 
-## Steps
+### Must-have features
 
-### Data preprocessing
+#### Step 1 : Data cleaning
 
-A clean dataset has been prepared in `data/properties.csv`. These are some notes:
-- There are about 76 000 properties, roughly equally spread across houses and apartments
-- Each property has a unique identifier `id`
-- The target variable is `price`
-- Variables prefixed with `fl_` are dummy variables (1/0)
-- Variables suffixed with `_sqm` indicate the measurement is in square meters
-- All missing categories for the categorical variables are encoded as `MISSING`
+Preprocess the data to be used with machine learning.
 
-You still need to further prepare the dataset for machine learning. Think about:
-- Handling NaNs (hint: **imputation**)
-- Converting categorical data into numeric features (hint: **one-hot encoding**)
-- Rescaling numeric features (hint: **standardization**)
+- You have to handle NANs.
+- You have to handle categorical data.
+- You have to select features.
 
-**Keep track of your preprocessing steps. You will need to apply the same steps to the new dataset later on when generating predictions.** This is crucial! Think _reusable pipeline_!
+#### Step 2: Data split
 
-Additionally, you can also consider (but feel free to skip this and go straight to a first model iteration):
-- Preselecting only the features that have at least some correlation with your target variable (hint: **univariate regression** or **correlation matrix**)
-- Removing features that have too strong correlation with one another (hint: **correlation matrix**)
+Now that the dataset is ready, you have to format it for machine learning:
 
-Once done, split your dataset for training and testing.
+- Divide your dataset for training and testing. (`X_train, y_train, X_test, y_test`)
 
-### Model training
+#### Step 3: Model selection
 
-The dataset is ready. Let's select a model.
+The dataset is ready. Now let's select a model.
 
-Start with **linear regression**, this will give you a good baseline performance.
+Look at which models make the most sense according to your data.
 
-If you feel like it, try the more advanced models available via `scikit-learn` as well: Lasso, Ridge, Elastic Net, Random Forest, XGBoost, CatBoost, ... Just refrain from any deep learning model for now.
+#### Step 4: Apply your model
 
-Train your model(s).
+Apply your model on your data:
 
-### Model evaluation & iteration
+- Train your model (on the train dataset)
+- Check for predictions (on single lines or the test dataset)
+- Once this works, look into ``sklearn``'s ``Pipeline`` object to make things clean and reusable
 
-Evaluate your model. What do the performance metrics say?
+#### Step 5: Model evaluation
 
-Don't stop with your first model. Iterate! Try to improve your model by testing different models, or by changing the preprocessing.
+Let's evaluate your model. The metric we are interested in is the MAE (Mean Absolute Error). Make sure you understand it well. Try to answer those questions:
 
-## Score board
+- How could you improve this result?
+- Which part of the process has the most impact on the results?
+- Are there other metrics which would make more sense to evaluate your model.
 
-You should create a model on the training data provided, and test it on your proper test data obtained after splitting the dataset. Your `train.py` script is all yours so configure it how you see fit. You can experiment first in a notebook before you start scripting.
+#### Bonus Step 5.5: Reinventing the wheel
 
-Additionally, we stored around 4000 properties in an external dataset that is secret to you, which we will use as the true out-of-sample test of your model's strength... 😇
+I know some of you will get to a viable model really quickly and will get bored to go back and forth between filtering out outliers and selecting features. The truth is when playing with ML, you only truly understand it when you do it yourself. Here is what you can do:
 
-The structure of the `predict.py` script needs to stay the same! We configured a CLI tool to point to the external dataset and any output location. The `predict()` function should encapsulate all the logic to go from an input dataset (_with the same structure as the one used for training_) to predictions. Your predictions will be stored and then checked against the actual prices. You can experiment with the script to make sure it works on your end by running following command:
-```bash
-python .\predict.py -i "data\input.csv" -o "output\predictions.csv"
-```
+- Watch what most ML models do to make a prediction
+- Select one which you find elegant
+- Implement it from scratch using at maximum ``numpy``
 
-You have three chances (at every day's end) to update your models and the according `predict.py` script. Simply do so by committing the latest changes to your repository.
+Note that some are easier to implement than others.
 
-## Quality Assurance
+#### Step 6: Presentation
 
-Read our "Coding Best Practices Manifesto" and apply what's in there!
+Present your results in front of the group.
+
+- You have to make a nice presentation **with a professional design**.
+- You have **5 minutes** to present (without Q&A). **You can't use more time**, **you can't use less time**.
+- You **CAN'T show code or jupyter notebook** during the presentation.
+
+## Constraints
+
+### Code style
+
+- Each **function or class** has to be **typed**
+- Each **function or class** has to contain a **docstring**
+- Your code should be **commented** when necessary.
+- Your code should be **cleaned of any unused code**.
 
 ## Deliverables
 
-1. Publish your code and model(s) on a GitHub repository named `immo-eliza-ml`
-    - Follow the structure in the project folder - just copy paste all folders and files to get started
-    - Don't forget to do the virtual environment, .gitignore, ... dance
+1. Pimp up the README file:
+   - Description
+   - Installation
+   - Usage
+   - (Visuals)
+   - (Contributors)
+   - (Timeline)
+   - (Personal situation)
+2. Present your results in front of the group in **5mins max**.
 
-2. Fill in the `MODELSCARD.md` details.
+### Steps
 
-    A **model card** is a document that provides a summary of a model. It is a standardized report that allows to communicate the model's purpose, performance, and limitations. You'd integrate this information into the model validation process where people who did not create the model can check if what you did actually made sense, before your model gets integrated into the company's IT processes.
-
-    Find some (advanced) model card inspiration [here](https://huggingface.co/docs/hub/model-cards).
+1. Create the repository
+2. Study the request (What & Why ?)
+3. Identify technical challenges (How ?)
 
 ## Evaluation criteria
 
-| Criterion      | Indicator                                                    | Yes/No |
-| -------------- | ------------------------------------------------------------ | ------ |
-| 1. Is good     | Your repository is complete                                  | [ ]    |
-|                | Your code is clean                                           | [ ]    |
-|                | Your models card is clear                                    | [ ]    |
-|                | Your `predict.py` script works with the external test data   | [ ]    |
+| Criteria       | Indicator                                     | Yes/No |
+| -------------- | --------------------------------------------- | ------ |
+| 1. Is complete | Know how to answer all the above questions.   | [ ]    |
+|                | `pandas` and `matplotlib`/`seaborn` are used. | [ ]    |
+|                | All the above steps were followed.            | [ ]    |
+|                | A nice README is available.                   | [ ]    |
+|                | Your model is able to predict something.      | [ ]    |
+| 2. Is good     | You used typing and docstring.                | [ ]    |
+|                | Your code is formatted (PEP8 compliant).      | [ ]    |
+|                | No unused file/code is present.               | [ ]    |
 
 ## Quotes
 
-_"Artificial intelligence, deep learning, machine learning — whatever you're doing, if you don't understand it — learn it. Because otherwise you're going to be a dinosaur within 3 years." - Mark Cuban_
+“The lottery is a tax on people who don't understand the statistics.”
+_- Anonymous_
 
 ![You've got this!](https://media.giphy.com/media/5wWf7GMbT1ZUGTDdTqM/giphy.gif)
