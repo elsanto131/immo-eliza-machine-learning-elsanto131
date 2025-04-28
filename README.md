@@ -58,6 +58,8 @@ Let's evaluate your model. The metric we are interested in is the MAE (Mean Abso
 - Which part of the process has the most impact on the results?
 - Are there other metrics which would make more sense to evaluate your model.
 
+You may go back a couple of steps if you want to try other types of approaches.
+
 #### Bonus Step 5.5: Reinventing the wheel
 
 I know some of you will get to a viable model really quickly and will get bored to go back and forth between filtering out outliers and selecting features. The truth is when playing with ML, you only truly understand it when you do it yourself. Here is what you can do:
