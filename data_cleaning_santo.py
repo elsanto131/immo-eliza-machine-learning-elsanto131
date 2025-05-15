@@ -3,7 +3,7 @@
 import pandas as pd # EN : Importing the Pandas library - FR : Importation de la bibliothèque Pandas
 import os # EN : Importing the OS library - FR : Importation de la bibliothèque OS
 from sklearn.preprocessing import LabelEncoder # EN : Importing the LabelEncoder from sklearn - FR : Importation de LabelEncoder de sklearn
-
+import logging  # EN: For logging errors and information - FR: Pour enregistrer les erreurs et informations
 
 # EN : DataManager class to handle data operations - FR : Classe DataManager pour gérer les opérations sur les données
 class DataManager:
@@ -16,7 +16,18 @@ class DataManager:
         
         main_df[id_col] = pd.to_numeric(main_df[id_col], errors='coerce').astype('Int64')
 
+        # Vérification de l'existence du fichier avant de le charger
+        if not os.path.exists(path_to_csv):
+            logging.error(f"File not found: {path_to_csv}")
+            return None  # Arrêter l'exécution si le fichier n'existe pas
+        
         from_df = pd.read_csv(path_to_csv)
+        
+        # Vérification de l'existence des colonnes dans le fichier source
+        if from_id_col not in from_df.columns:
+            logging.error(f"Column '{from_id_col}' not found in source file.")
+            return None  # Arrêter l'exécution si la colonne de fusion est manquante
+        
         from_df = from_df[[from_id_col] + from_columns_to_merge]
         from_df = from_df.rename(columns={from_id_col: 'from_id'})
         from_df = from_df.drop_duplicates(subset=['from_id'], keep='first')
@@ -25,29 +36,33 @@ class DataManager:
         main_df = main_df.drop(columns=['from_id'])
 
         if verbose:
-            print(f"DataManager::merge_columnsFrom -> columns merge successfully: {main_df.columns.to_list()}")
+            print(f"DataManager::merge_columnsFrom -> columns merged successfully: {main_df.columns.to_list()}")
         return main_df
 
 # EN : Function to clean the data - FR : Fonction pour nettoyer les données
 def data_cleaning(filepath, output_path):
     # 1.2. EN : Importing the CSV file and reading it using Pandas - FR : Importation du fichier csv et lecture grâce à Pandas
     df = pd.read_csv(filepath)
+    
+    # Renommer les colonnes
     df.columns = df.columns.str.strip().str.lower().str.replace(' ', '_') # EN Renaming columns - FR Renommer les colonnes
 
-    # 1.2.2. EN : Check the structure of the Giraffe.csv Dataframe and merge with the main DataFrame - FR : Vérifier la structure du DataFrame Giraffe.csv et fusionner avec le DataFrame principal
+    # 1.2.2. EN : Check the structure of the DataFrame and merge with the main DataFrame - FR : Vérifier la structure du DataFrame et fusionner avec le DataFrame principal
     df = DataManager.merge_columnsFrom(
-    main_df=df,
-    path_to_csv="/Users/santodacquisto/Desktop/BeCode/2. A.I. Bootcamp/Exercice/immo-eliza-machine-learning-elsanto131/data/Giraffe.csv",
-    id_col="id",
-    from_id_col="propertyId",
-    from_columns_to_merge=[
-        'latitude',
-        'longitude',
-        'cadastralIncome',
-        'primaryEnergyConsumptionPerSqm'
-    ],
-    verbose=1
+        main_df=df,
+        path_to_csv="data/Giraffe.csv",  # Chemin relatif pour le fichier Giraffe
+        id_col="id",
+        from_id_col="propertyId",
+        from_columns_to_merge=[
+            'latitude',
+            'longitude',
+            'cadastralIncome',
+            'primaryEnergyConsumptionPerSqm'
+        ],
+        verbose=1
     )
+    if df is None:  # Si la fusion échoue, retourner None
+        return None
 
     # 1.3. EN : Remove duplicates and unnecessary columns - FR : Supprimer les doublons et des colonnes inutiles
     df = df.drop_duplicates() # EN Remove duplicates - FR Supprimer les doublons
@@ -62,31 +77,18 @@ def data_cleaning(filepath, output_path):
         df[column] = df[column].astype(str).str.strip() # EN Convert all columns to string and remove leading and trailing spaces - FR Convertir toutes les colonnes en chaîne et supprimer les espaces de début et de fin
 
     # 1.5. EN : Remove columns with too many missing values - FR : Supprimer les colonnes avec trop de valeurs manquantes
-    df = df.dropna(thresh=len(df)*0.8, axis=1)# EN Drop columns with more than 80% missing values - FR Supprimer les colonnes avec plus de 80 % de valeurs manquantes
-    
-    '''
-    # 1.6. EN : Impute missing values for important columns - FR : Imputer les valeurs manquantes pour les colonnes importantes
-    df['bedroomcount'] = df['bedroomcount'].fillna(df['bedroomcount'].median()) # EN Fill missing values in 'bedroomcount' with the median - FR Remplir les valeurs manquantes dans 'bed
-    df['bathroomcount'] = df['bathroomcount'].fillna(df['bathroomcount'].median()) # EN Fill missing values in 'bathroomcount' with the median - FR Remplir les valeurs manquantes dans 'bathroomcount' avec la médiane
-    df['cadastralIncome'] = df['cadastralIncome'].fillna(df['cadastralIncome'].median()) # EN Fill missing values in 'cadastralIncome' with the median - FR Remplir les valeurs manquantes dans 'cadastralIncome' avec la médiane
-    df['primaryEnergyConsumptionPerSqm'] = df['primaryEnergyConsumptionPerSqm'].fillna(df['primaryEnergyConsumptionPerSqm'].median()) # EN Fill missing values in 'primaryEnergyConsumptionPerSqm' with the median - FR Rem
+    df = df.dropna(thresh=len(df)*0.8, axis=1) # EN Drop columns with more than 80% missing values - FR Supprimer les colonnes avec plus de 80 % de valeurs manquantes
 
-    # 1.7. EN : Qualitative columns, impute with the most frequent value. - FR : Colonnes qualitatives, imputer par la modalité la plus fréquente.
-    for column in df.select_dtypes(include=['object']).columns: # EN Fill missing values in qualitative columns with the most frequent value - FR Remplir les valeurs manquantes dans les colonnes qualitatives avec la valeur la plus fréquente
-        df[column] = df[column].fillna(df[column].mode()[0]) # EN Fill missing values in qualitative columns with the most frequent value - FR Remplir les valeurs manquantes dans les colonnes qualitatives avec la valeur la plus fréquente
-    '''
-    #1.8. EN : Remove missing values in the price column and habitableSurface - FR : Suppressions des valeurs manquantes dans la colonne price et habitablesurface
-    df = df.dropna(subset=['price']) # EN Drop rows with missing values in 'price' - FR Supprimer les lignes avec des valeurs manquantes dans 'price'
-    df = df.dropna(subset=['habitablesurface']) # EN Drop rows with missing values in 'habitablesurface' - FR Supprimer les lignes avec des valeurs manquantes dans 'habitablesurface'
-    df = df.dropna(subset=['floodzonetype']) # EN Drop rows with missing values in 'floodZoneType' - FR Supprimer les lignes avec des valeurs manquantes dans 'floodzonetype'
-    df = df.dropna(subset=['latitude', 'longitude']) # EN Drop rows with missing values in 'latitude' and 'longitude' - FR Supprimer les lignes avec des valeurs manquantes dans 'latitude' et 'longitude'
+    # 1.8. EN : Remove missing values in price, habitableSurface, and floodzonetype - FR : Supprimer les valeurs manquantes dans price, habitableSurface, et floodzonetype
+    df = df.dropna(subset=['price', 'habitablesurface', 'floodzonetype', 'latitude', 'longitude'])  # Drop rows with missing critical values
 
     # 1.9. EN : Convert binary columns to 0/1 - FR : Convertir les colonnes binaires en 0/1
     binary_columns = [
-    'haslift', 'hasheatpump', 
-    'hasphotovoltaicpanels', 'hasthermicpanels', 'hasgarden', 
-    'hasairconditioning', 'hasarmoreddoor', 'hasvisiophone',
-    'hasoffice', 'hasswimmingpool', 'hasfireplace', 'hasterrace'] # EN Get the binary columns - FR Obtenir les colonnes binaires
+        'haslift', 'hasheatpump', 
+        'hasphotovoltaicpanels', 'hasthermicpanels', 'hasgarden', 
+        'hasairconditioning', 'hasarmoreddoor', 'hasvisiophone',
+        'hasoffice', 'hasswimmingpool', 'hasfireplace', 'hasterrace'
+    ]  # EN Get the binary columns - FR Obtenir les colonnes binaires
 
     true_vals = ['True', 'true', True, '1', 1, 'yes', 'Yes', 'oui', 'Oui']
     false_vals = ['False', 'false', False, '0', 0, 'no', 'No', 'non', 'Non']
@@ -95,31 +97,27 @@ def data_cleaning(filepath, output_path):
         if column in df.columns:
             df[column] = df[column].apply(lambda x: 1 if x in true_vals else (0 if x in false_vals else 0)).astype(int)
 
-
     # 1.10.1. EN : Convert 'epcscore' to an ordered categorical and then to numeric codes - FR : Convertir 'epcscore' en catégorique ordonné puis en codes numériques
-    epc_order = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G'] # EN Define the order of the categories - FR Définir l'ordre des catégories
-    df['epcscore'] = df['epcscore'].astype(pd.CategoricalDtype(categories=epc_order, ordered=True)) # EN Convert 'epcscore' to categorical with the defined order - FR Convertir 'epcscore' en catégorique avec l'ordre défini
-    df['epcscore'] = df['epcscore'].cat.codes # EN Convert categorical values to numerical codes - FR Convertir les valeurs catégorielles en codes numériques
+    if 'epcscore' in df.columns:
+        epc_order = ['A+', 'A', 'B', 'C', 'D', 'E', 'F', 'G']  # EN Define the order of the categories - FR Définir l'ordre des catégories
+        df['epcscore'] = df['epcscore'].astype(pd.CategoricalDtype(categories=epc_order, ordered=True))  # EN Convert 'epcscore' to categorical with the defined order - FR Convertir 'epcscore' en catégorique avec l'ordre défini
+        df['epcscore'] = df['epcscore'].cat.codes  # EN Convert categorical values to numerical codes - FR Convertir les valeurs catégorielles en codes numériques
 
     # 1.10.2. EN : Encode 'floodzonetype' as integers with LabelEncoder - FR : Encoder 'floodzonetype' en entiers avec LabelEncoder
-    from sklearn.preprocessing import LabelEncoder # EN Import LabelEncoder from sklearn - FR Importer LabelEncoder de sklearn
-
-    label_encoder = LabelEncoder() # EN Create a LabelEncoder instance - FR Créer une instance de LabelEncoder
-    df['floodzonetype'] = label_encoder.fit_transform(df['floodzonetype']) # EN Fit and transform the 'floodzonetype' column - FR Ajuster et transformer la colonne 'floodzonetype'
-
+    if 'floodzonetype' in df.columns:
+        label_encoder = LabelEncoder()  # EN Create a LabelEncoder instance - FR Créer une instance de LabelEncoder
+        df['floodzonetype'] = label_encoder.fit_transform(df['floodzonetype'])  # EN Fit and transform the 'floodzonetype' column - FR Ajuster et transformer la colonne 'floodzonetype'
 
     # Réduire le nombre de modalités dans 'locality' aux 50 plus fréquentes
     if 'locality' in df.columns:
         top_localities = df['locality'].value_counts().nlargest(50).index
         df['locality'] = df['locality'].apply(lambda x: x if x in top_localities else 'Other')
 
-
-    #1.11. EN : One-hot Encoding - FR : Encodage One-hot
-    # Liste des colonnes catégorielles à encoder
+    # 1.11. EN : One-hot Encoding - FR : Encodage One-hot
     categorical_columns = [
-    'type', 'subtype', 'province', 'locality',
-    'buildingcondition', 'floodzonetype', 'heatingtype',
-    'kitchentype', 'gardenorientation', 'terraceorientation'
+        'type', 'subtype', 'province', 'locality',
+        'buildingcondition', 'floodzonetype', 'heatingtype',
+        'kitchentype', 'gardenorientation', 'terraceorientation'
     ]
 
     # Vérifie si ces colonnes existent encore avant de les encoder
@@ -130,13 +128,12 @@ def data_cleaning(filepath, output_path):
 
     # 1.12. EN : Filter out prices above 1.000.000€ - FR : Filtrer les prix au-delà de 1.000.000€
     df = df[(df['price'] >= 50000) & (df['price'] <= 1000000)]
-    #print(f"Data sample after price filter (<= 1.000.000€):\n{df.head()}")
-    
-    #1.13. EN : Save the cleaned DataFrame to a CSV file - FR : Enregistrer le DataFrame nettoyé dans un fichier CSV
+
+    # 1.13. EN : Save the cleaned DataFrame to a CSV file - FR : Enregistrer le DataFrame nettoyé dans un fichier CSV
     os.makedirs(os.path.dirname(output_path), exist_ok=True)
     df.to_csv(output_path, index=False)
     
     row_count = len(df)
-    print(f" Cleaned dataframe saved in : {output_path}")
-    print(f" The DataFrame has {row_count} rows. ")
+    print(f"Cleaned dataframe saved in: {output_path}")
+    print(f"The DataFrame has {row_count} rows.")
     return df

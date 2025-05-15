@@ -1,10 +1,13 @@
 # --- EN : Importation des bibliothèques - FR : Importation des bibliothèques ---
-import logging
+import logging # EN : Importing the logging library - FR : Importation de la bibliothèque de journalisation
+#import joblib # EN : Importing the Joblib library - FR : Importation de la bibliothèque Joblib
+from joblib import dump, load # EN : Importing the dump and load functions from Joblib - FR : Importation des fonctions dump et load de Joblib
 from data_cleaning_santo import data_cleaning
 #from data_visualization_santo import create_visualizations
 #from model_linear_regression_building_santo import build_linear_regression_model
 from model_random_forest_regressor_building_santo import build_random_forest_model
 #from model_gradient_boosting_regressor_building_santo import build_gradient_boosting_model
+
 
 # --- EN : Setting up logging - FR : Configuration de la journalisation 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -18,8 +21,8 @@ def main():
     logging.info("Start of data cleaning...") # EN Log message indicating the start of data cleaning - FR Message de log indiquant le début du nettoyage des données
     
     cleaned_data = data_cleaning(
-        filepath='/Users/santodacquisto/Desktop/BeCode/2. A.I. Bootcamp/Exercice/immo-eliza-data-exploration-milan/datasets/Kangaroo.csv',
-        output_path='/Users/santodacquisto/Desktop/BeCode/2. A.I. Bootcamp/Exercice/immo-eliza-data-exploration-milan/datasets/Kangaroo_cleaned.csv'
+        filepath='data/Kangaroo.csv',
+        output_path='data/Kangaroo_cleaned.csv'
     )
 
     logging.debug("Cleaning data...") # EN Log message indicating that the data is being cleaned - FR Message de log indiquant que les données sont en cours de nettoyage
@@ -28,7 +31,7 @@ def main():
 
     '''
     print(df.shape)
-    print(df.head())
+    print(df.head()) 
     
 
     # --- 2. EN Visualize the data - FR Visualisation des données ---
@@ -57,6 +60,15 @@ def main():
     logging.info(f"| {'RMSE':<15} | {train_rmse:10.2f} | {test_rmse:10.2f} | {abs(train_rmse - test_rmse):10.2f} |") # EN Log message showing the RMSE - FR Message de log affichant le RMSE
     logging.info(f"| {'MAE':<15} | {train_mae:10.2f} | {test_mae:10.2f} | {abs(train_mae - test_mae):10.2f} |") # EN Log message showing the MAE - FR Message de log affichant le MAE
     logging.info("-" * 58) # EN Log message indicating the end of the results display - FR Message de log indiquant la fin de l'affichage des résultats
+
+    # --- 5. EN Saving the model - FR Sauvegarde du modèle ---
+
+    logging.info("Saving the trained model...") # EN Log message indicating the start of model saving - FR Message de log indiquant le début de la sauvegarde du modèle
+
+    with open("model_random_forest_regressor_building_santo.pkl", "wb") as f:
+        dump(model, 'model_random_forest_regressor_building_santo_compression.pkl', compress=('lzma', 9)) # EN Save the model to a file - FR Enregistrer le modèle dans un fichier
+
+    logging.info("Model saved successfully.")
 
     logging.info("Script execution finished") # EN Log message indicating the end of the script execution - FR Message de log indiquant la fin de l'exécution du script
 
