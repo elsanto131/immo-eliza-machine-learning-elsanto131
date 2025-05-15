@@ -4,6 +4,13 @@ import streamlit as st
 from joblib import dump, load # EN : Importing the dump and load functions from Joblib - FR : Importation des fonctions dump et load de Joblib
 from PIL import Image
 
+# --- Fonction pour le chargement du modèle ---
+@st.cache_resource
+def load_model():
+    with open("model_random_forest_regressor_building_santo.pkl", "rb") as f:
+        model = load(f)
+    return model
+
 # --- Ajout du style et de la police ---
 st.markdown("""
     <style>
@@ -104,8 +111,7 @@ st.markdown('</div>', unsafe_allow_html=True)
 df = pd.read_csv("data/Kangaroo_cleaned.csv")
 
 # --- Chargement du modèle et des colonnes attendues ---
-with open("model_random_forest_regressor_building_santo.pkl", "rb") as f:
-    model = load(f)
+model = load_model()  # Chargement du modèle
 expected_columns = load('model_features.pkl')  # fichier contenant la liste des colonnes d'entrée
 
 # --- Utilisation de session_state pour gérer les étapes du formulaire ---
